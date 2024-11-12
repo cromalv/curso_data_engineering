@@ -1,0 +1,26 @@
+---
+version: 2
+sources:
+  - name: google_sheets
+    schema: google_sheets
+    database: ALUMNO5_DEV_BRONZE_DB
+    quoting:
+      database: false
+      schema: false
+      identifier: false
+    freshness:
+      warn_after:
+        count: 24
+        period: hour
+      error_after:
+        count: 72
+        period: hour
+    tables:
+      - name: budget
+        loaded_at_field: _fivetran_synced
+        columns:
+          - name: _row
+          - name: product_id
+          - name: quantity
+          - name: month
+          - name: _fivetran_synced
