@@ -2,7 +2,7 @@ version: 2
 
 sources:
 
-  - name: fivetran_source # Nombre del origen (lo puedes personalizar)
+  - name: sql_server_dbo # Nombre del origen (lo puedes personalizar)
     database: ALUMNO5_DEV_BRONZE_DB # Nombre de la base de datos
     schema: sql_server_dbo # Nombre del esquema, reemplázalo con el nombre correcto de tu esquema
 
