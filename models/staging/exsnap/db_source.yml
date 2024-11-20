@@ -2,8 +2,8 @@ version: 2
 
 sources:
 
-  - name: db # name of the source 
-    schema: db # this is the schema our raw data lives in
+  - name: public # name of the source 
+    schema: public # this is the schema our raw data lives in
     database: ALUMNO5_DEV_BRONZE_DB # this is the name of our database
 
     tables:
