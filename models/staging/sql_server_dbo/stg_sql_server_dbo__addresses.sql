@@ -14,13 +14,13 @@ with source as (
 renamed as (
 
     select
-        address_id,
-        zipcode,
-        country,
-        address,
-        state,
-        _fivetran_deleted,
-        _fivetran_synced
+        ADDRESS_ID,
+        LPAD(ZIPCODE, 5, '0') AS ZIPCODE,
+        UPPER(COUNTRY) AS COUNTRY,
+        INITCAP(ADDRESS) AS ADDRESS,
+        UPPER(STATE) AS STATE,
+        _FIVETRAN_DELETED,
+        _FIVETRAN_SYNCED
 
     from source
 
