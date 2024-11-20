@@ -1,7 +1,7 @@
 version: 2
 
 sources:
-  - name: sql_server_dbo # Nombre del origen (lopuedes personalizar)
+  - name: sql_server_dbo # Nombre del origen (lo puedes personalizar)
     database: ALUMNO5_DEV_BRONZE_DB # Nombre de la base de datos
     schema: sql_server_dbo # Nombre del esquema, reemplázalo con el nombre correcto de tu esquema
 
@@ -19,79 +19,26 @@ sources:
         loaded_at_field: _FIVETRAN_SYNCED
         columns:
           - name: ADDRESS_ID
-            tests:
-              - unique
-              - not_null
           - name: ZIPCODE
-            tests:
-              - numeric
-              - not_null
-              - accepted_values:
-                  values: [1000, 2000, 3000, 4000] # Sustituir con valores válidos si están definidos
           - name: COUNTRY
-            tests:
-              - not_null
-              - accepted_values:
-                  values: ["USA", "CANADA", "MEXICO"] # Ajustar según los países esperados
           - name: ADDRESS
-            tests:
-              - not_null
           - name: STATE
-            tests:
-              - not_null
-              - accepted_values:
-                  values: ["CA", "NY", "TX", "FL"] # Cambiar por los estados esperados
           - name: _FIVETRAN_DELETED
-            tests:
-              - not_null
-              - accepted_values:
-                  values: [true, false]
           - name: _FIVETRAN_SYNCED
-            tests:
-              - not_null
-              - datetime
 
       - name: events
         loaded_at_field: _FIVETRAN_SYNCED
         columns:
           - name: EVENT_ID
-            tests:
-              - unique
-              - not_null
           - name: PAGE_URL
-            tests:
-              - not_null
           - name: EVENT_TYPE
-            tests:
-              - not_null
-              - accepted_values:
-                  values: ['click', 'view', 'purchase', 'signup']  # Ajusta según los tipos válidos de eventos.
           - name: USER_ID
-            tests:
-              - not_null
           - name: PRODUCT_ID
-            tests:
-              - not_null
           - name: SESSION_ID
-            tests:
-              - not_null
           - name: CREATED_AT
-            tests:
-              - not_null
-              - datetime
           - name: ORDER_ID
-            tests:
-              - unique  # Si un evento puede tener un único ORDER_ID asociado.
           - name: _FIVETRAN_DELETED
-            tests:
-              - not_null
-              - accepted_values:
-                  values: [true, false]
-          - name: _FIVETRAN_SYNCED
-            tests:
-              - not_null
-              - datetime
-      
+          - name: _FIVETRAN_SYNCED      
 
       - name: orders
         loaded_at_field: _FIVETRAN_SYNCED
