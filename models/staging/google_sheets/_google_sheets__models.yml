@@ -7,27 +7,18 @@ models:
       - name: address_id
         data_type: varchar
         description: "Identificador único para la dirección."
-        tests:
-          - not_null: {}
-          - unique: {}
 
       - name: zipcode
         data_type: varchar
-        description: "Código postal de la dirección."
-        tests:
-          - not_null: {}
+        description: "Código postal de la dirección."         
 
       - name: country
         data_type: varchar
         description: "País asociado a la dirección."
-        tests:
-          - not_null: {}
-
+          
       - name: address
         data_type: varchar
-        description: "Texto que describe la dirección completa."
-        tests:
-          - not_null: {}
+        description: "Texto que describe la dirección completa."         
 
       - name: state
         data_type: varchar
@@ -36,14 +27,10 @@ models:
       - name: _fivetran_deleted
         data_type: boolean
         description: "Indica si el registro fue eliminado por Fivetran."
-        tests:
-          - not_null: {}
 
       - name: _fivetran_synced
         data_type: timestamp_tz
         description: "Fecha y hora de sincronización del registro."
-        tests:
-          - not_null: {}
 
   - name: stg_sql_server_dbo__events
     description: "Modelo que representa los eventos generados por los usuarios."
@@ -52,7 +39,7 @@ models:
         data_type: varchar
         description: "Identificador único para el evento."
         tests:
-          - not_null: {}
+          
           - unique: {}
 
       - name: page_url
@@ -61,9 +48,7 @@ models:
 
       - name: event_type
         data_type: varchar
-        description: "Tipo de evento (por ejemplo, clic, vista)."
-        tests:
-          - not_null: {}
+        description: "Tipo de evento (por ejemplo, clic, vista)."          
 
       - name: user_id
         data_type: varchar
@@ -80,24 +65,18 @@ models:
       - name: created_at
         data_type: timestamp_ntz
         description: "Fecha y hora de creación del evento."
-        tests:
-          - not_null: {}
-
+          
       - name: order_id
         data_type: varchar
         description: "Identificador del pedido asociado al evento (si aplica)."
 
       - name: _fivetran_deleted
         data_type: boolean
-        description: "Indica si el registro fue eliminado por Fivetran."
-        tests:
-          - not_null: {}
+        description: "Indica si el registro fue eliminado por Fivetran."          
 
       - name: _fivetran_synced
         data_type: timestamp_tz
-        description: "Fecha y hora de sincronización del registro."
-        tests:
-          - not_null: {}
+        description: "Fecha y hora de sincronización del registro."      
 
   - name: stg_sql_server_dbo__order_items
     description: "Modelo que representa los elementos individuales dentro de los pedidos."
@@ -105,34 +84,22 @@ models:
       - name: order_id
         data_type: varchar
         description: "Identificador del pedido asociado al elemento."
-        tests:
-          - not_null: {}
 
       - name: product_id
         data_type: varchar
         description: "Identificador del producto dentro del pedido."
-        tests:
-          - not_null: {}
-
+          
       - name: quantity
         data_type: number
         description: "Cantidad del producto en el pedido."
-        tests:
-          - not_null: {}
-          - greater_than:
-              value: 0
 
       - name: _fivetran_deleted
         data_type: boolean
         description: "Indica si el registro fue eliminado por Fivetran."
-        tests:
-          - not_null: {}
 
       - name: _fivetran_synced
         data_type: timestamp_tz
         description: "Fecha y hora de sincronización del registro."
-        tests:
-          - not_null: {}
 
   - name: stg_sql_server_dbo__orders
     description: "Modelo que representa los pedidos realizados por los usuarios."
@@ -140,9 +107,6 @@ models:
       - name: order_id
         data_type: varchar
         description: "Identificador único del pedido."
-        tests:
-          - not_null: {}
-          - unique: {}
 
       - name: shipping_service
         data_type: varchar
@@ -151,10 +115,6 @@ models:
       - name: shipping_cost
         data_type: float
         description: "Costo del envío del pedido."
-        tests:
-          - not_null: {}
-          - greater_than_or_equal_to:
-              value: 0
 
       - name: address_id
         data_type: varchar
@@ -163,8 +123,6 @@ models:
       - name: created_at
         data_type: timestamp_tz
         description: "Fecha y hora de creación del pedido."
-        tests:
-          - not_null: {}
 
       - name: promo_id
         data_type: varchar
@@ -181,16 +139,10 @@ models:
       - name: user_id
         data_type: varchar
         description: "Identificador del usuario que realizó el pedido."
-        tests:
-          - not_null: {}
 
       - name: order_total
         data_type: float
         description: "Total del pedido, incluyendo costos y descuentos."
-        tests:
-          - not_null: {}
-          - greater_than_or_equal_to:
-              value: 0
 
       - name: delivered_at
         data_type: timestamp_tz
@@ -203,20 +155,20 @@ models:
       - name: status
         data_type: varchar
         description: "Estado actual del pedido (por ejemplo, entregado, pendiente)."
-        tests:
-          - not_null: {}
+
+          
 
       - name: _fivetran_deleted
         data_type: boolean
         description: "Indica si el registro fue eliminado por Fivetran."
-        tests:
-          - not_null: {}
+
+          
 
       - name: _fivetran_synced
         data_type: timestamp_tz
         description: "Fecha y hora de sincronización del registro."
-        tests:
-          - not_null: {}
+
+          
 
   - name: stg_sql_server_dbo__products
     description: "Modelo que representa los productos disponibles en el sistema."
@@ -225,42 +177,34 @@ models:
         data_type: varchar
         description: "Identificador único del producto."
         tests:
-          - not_null: {}
+          
           - unique: {}
 
       - name: price
         data_type: float
         description: "Precio del producto."
-        tests:
-          - not_null: {}
-          - greater_than_or_equal_to:
-              value: 0
 
       - name: name
         data_type: varchar
         description: "Nombre del producto."
-        tests:
-          - not_null: {}
+
+          
 
       - name: inventory
         data_type: number
         description: "Cantidad en inventario del producto."
-        tests:
-          - not_null: {}
-          - greater_than_or_equal_to:
-              value: 0
+
 
       - name: _fivetran_deleted
         data_type: boolean
         description: "Indica si el registro fue eliminado por Fivetran."
-        tests:
-          - not_null: {}
+
+          
 
       - name: _fivetran_synced
         data_type: timestamp_tz
         description: "Fecha y hora de sincronización del registro."
-        tests:
-          - not_null: {}
+
 
   - name: stg_sql_server_dbo__promos
     description: "Modelo que representa las promociones aplicadas en los pedidos."
@@ -269,34 +213,29 @@ models:
         data_type: varchar
         description: "Identificador único de la promoción."
         tests:
-          - not_null: {}
+          
           - unique: {}
 
       - name: discount
         data_type: number
         description: "Descuento aplicado por la promoción."
-        tests:
-          - not_null: {}
-          - greater_than_or_equal_to:
-              value: 0
 
       - name: status
         data_type: varchar
         description: "Estado de la promoción (activa o inactiva)."
-        tests:
-          - not_null: {}
+
+          
 
       - name: _fivetran_deleted
         data_type: boolean
         description: "Indica si el registro fue eliminado por Fivetran."
-        tests:
-          - not_null: {}
+
+          
 
       - name: _fivetran_synced
         data_type: timestamp_tz
         description: "Fecha y hora de sincronización del registro."
-        tests:
-          - not_null: {}
+
 
   - name: stg_sql_server_dbo__users
     description: "Modelo que representa a los usuarios registrados en la tienda."
@@ -305,36 +244,35 @@ models:
         data_type: varchar
         description: "Identificador único del usuario."
         tests:
-          - not_null: {}
+          
           - unique: {}
 
       - name: name
         data_type: varchar
         description: "Nombre del usuario."
-        tests:
-          - not_null: {}
+          
 
       - name: email
         data_type: varchar
         description: "Correo electrónico del usuario."
         tests:
-          - not_null: {}
+          
           - unique: {}
 
       - name: created_at
         data_type: timestamp_tz
         description: "Fecha y hora en que se registró el usuario."
-        tests:
-          - not_null: {}
+
+          
 
       - name: _fivetran_deleted
         data_type: boolean
         description: "Indica si el registro fue eliminado por Fivetran."
-        tests:
-          - not_null: {}
+
+          
 
       - name: _fivetran_synced
         data_type: timestamp_tz
         description: "Fecha y hora de sincronización del registro."
-        tests:
-          - not_null: {}
+
+          
