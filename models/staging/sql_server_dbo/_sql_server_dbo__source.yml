@@ -1,9 +1,11 @@
 version: 2
 
 sources:
-  - name: sql_server_dbo # Nombre del origen (lo puedes personalizar)
-    database: "{{ env_var('DBT_ENVIRONMENTS') }}_BRONZE_DB"   # Nombre de la base de datos
-    schema: sql_server_dbo # Nombre del esquema, reemplázalo con el nombre correcto de tu esquema
+  - name: src_sql_server_dbo
+    description: base de datos de origen ("DEV_BRONZE") desde el datawarehouse de Snowflake.
+
+    schema: sql_server_dbo
+    database: "{{ env_var('DBT_ENVIRONMENTS') }}_BRONZE_DB"
 
     quoting:
       database: false
@@ -11,93 +13,197 @@ sources:
       identifier: false
 
     freshness:
-      warn_after: { count: 24, period: hour } # Si no se actualiza en 24 horas, te advierte
-      error_after: { count: 72, period: hour } # Si no se actualiza en 48 horas, marca como error
+      warn_after: { count: 24, period: hour }
+      error_after: { count: 72, period: hour }
 
     tables:
       - name: addresses
-        loaded_at_field: _FIVETRAN_SYNCED
+        loaded_at_field: _fivetran_synced
+        description: una tabla que muestra las direcciones de los usuarios/clientes que realizaron pedidos o interactuaron con el sitio web.
         columns:
-          - name: ADDRESS_ID
-          - name: ZIPCODE
-          - name: COUNTRY
-          - name: ADDRESS
-          - name: STATE
-          - name: _FIVETRAN_DELETED
-          - name: _FIVETRAN_SYNCED
+          - name: address_id
+            data_type: varchar
+            description: una clave primaria de la base de datos de origen.
+          - name: country
+            data_type: varchar
+            description: el país donde se encuentra una dirección.
+          - name: state
+            data_type: varchar
+            description: el estado donde se encuentra una dirección.
+          - name: zipcode
+            data_type: varchar
+            description: el código postal donde se encuentra una dirección.
+          - name: address
+            data_type: varchar
+            description: la dirección (calle, número, número de apartamento, ...) de un usuario/cliente.
+          - name: _fivetran_synced
+            data_type: timestamp_tz
+            description: muestra la marca de tiempo en la que un registro fue cargado en la tabla de origen.
 
       - name: events
-        loaded_at_field: _FIVETRAN_SYNCED
+        description: tabla de origen para datos de eventos, principalmente sobre el comportamiento de nuestros prospectos en el sitio web.
         columns:
-          - name: EVENT_ID
-          - name: PAGE_URL
-          - name: EVENT_TYPE
-          - name: USER_ID
-          - name: PRODUCT_ID
-          - name: SESSION_ID
-          - name: CREATED_AT
-          - name: ORDER_ID
-          - name: _FIVETRAN_DELETED
-          - name: _FIVETRAN_SYNCED      
-
-      - name: orders
-        loaded_at_field: _FIVETRAN_SYNCED
-        columns:
-          - name: ORDER_ID
-          - name: SHIPPING_SERVICE
-          - name: SHIPPING_COST
-          - name: ADDRESS_ID
-          - name: CREATED_AT
-          - name: PROMO_ID
-          - name: ESTIMATED_DELIVERY_AT
-          - name: ORDER_COST
-          - name: USER_ID
-          - name: ORDER_TOTAL
-          - name: DELIVERED_AT
-          - name: TRACKING_ID
-          - name: STATUS
-          - name: _FIVETRAN_DELETED
-          - name: _FIVETRAN_SYNCED
+          - name: event_id
+            data_type: varchar
+            description: identificador clave primaria del evento. Un evento es una interacción con el sitio web, como ver una página de producto, agregar un producto al carrito, realizar un pago, etc.
+          - name: session_id
+            data_type: varchar
+            description: identificador clave primaria de la sesión del usuario. Un usuario puede estar en 1 sesión e interactuar con el sitio web, lo que significa que 1 sesión puede tener varios event_id.
+          - name: user_id
+            data_type: varchar
+            description: identificador clave primaria del usuario.
+          - name: event_type
+            data_type: varchar
+            description: el tipo de evento (por ejemplo, 'page_view', 'add-to-cart', 'checkout', 'package_shipped').
+          - name: product_id
+            data_type: varchar
+            description: identificador clave primaria del producto asociado con el evento.
+          - name: order_id
+            data_type: varchar
+            description: identificador clave primaria del pedido asociado con el evento.
+          - name: created_at
+            data_type: timestamp_ntz
+            description: marca de tiempo que indica cuándo ocurrió el evento en tiempo coordinado universal (UTC).
+          - name: page_url
+            data_type: varchar
+            description: URL asociada con el evento.
+          - name: _fivetran_synced
+            data_type: timestamp_tz
+            description: marca de tiempo que indica cuándo los datos se cargaron en la tabla de staging, incluyendo información sobre la zona horaria.
 
       - name: order_items
-        loaded_at_field: _FIVETRAN_SYNCED
+        description: tabla staging para datos de artículos de pedidos. Tiene la granularidad máxima, lo que significa que un order_id puede tener varios product_id con diferentes cantidades.
         columns:
-          - name: ORDER_ID
-          - name: PRODUCT_ID
-          - name: QUANTITY
-          - name: _FIVETRAN_DELETED
-          - name: _FIVETRAN_SYNCED
+          - name: order_id
+            data_type: varchar
+            description: identificador del pedido.
+          - name: product_id
+            data_type: varchar
+            description: identificador del producto.
+          - name: quantity
+            data_type: number
+            description: cantidad del producto vendido.
+          - name: _fivetran_synced
+            data_type: timestamp_tz
+            description: marca de tiempo que indica cuándo los datos se cargaron en la tabla de staging, incluyendo información sobre la zona horaria.
+
+      - name: orders
+        description: tabla staging para datos de pedidos. Tiene menos granularidad que "order_items", ya que agrega los productos del pedido y contiene más información relevante.
+        columns:
+          - name: order_id
+            data_type: varchar
+            description: identificador del pedido.
+          - name: user_id
+            data_type: varchar
+            description: identificador del usuario.
+          - name: address_id
+            data_type: varchar
+            description: identificador de la dirección de entrega, que puede ser diferente de la dirección de residencia del usuario.
+          - name: promo_id
+            data_type: varchar
+            description: identificador de la promoción.
+          - name: status
+            data_type: varchar
+            description: estado del pedido.
+          - name: tracking_id
+            data_type: varchar
+            description: identificador de seguimiento del pedido.
+          - name: shipping_service
+            data_type: varchar
+            description: nombre de la empresa de servicio de envío que entrega un pedido.
+          - name: created_at
+            data_type: timestamp_ntz
+            description: marca de tiempo que indica cuándo se creó el pedido en tiempo coordinado universal (UTC).
+          - name: estimated_delivery
+            data_type: timestamp_ntz
+            description: marca de tiempo estimada de entrega en tiempo coordinado universal (UTC) de un pedido.
+          - name: delivered_at
+            data_type: timestamp_ntz
+            description: marca de tiempo estimada de entrega en tiempo coordinado universal (UTC).
+          - name: order_cost
+            data_type: number
+            description: costo del pedido en dólares estadounidenses.
+          - name: shipping_cost
+            data_type: number
+            description: costo de envío de un pedido en dólares estadounidenses.
+          - name: order_total
+            data_type: number
+            description: costo total del pedido en dólares estadounidenses (= order_cost - discount + shipping_cost).
+          - name: _fivetran_synced
+            data_type: timestamp_ntz
+            description: marca de tiempo que indica cuándo los datos se cargaron en la tabla de staging, incluyendo información sobre la zona horaria.
 
       - name: products
-        loaded_at_field: _FIVETRAN_SYNCED
+        description: tabla de origen para datos de productos.
         columns:
-          - name: PRODUCT_ID
-          - name: PRICE
-          - name: NAME
-          - name: INVENTORY
-          - name: _FIVETRAN_DELETED
+          - name: product_id
+            data_type: varchar
+            description: identificador del producto.
+          - name: price
+            data_type: number
+            description: precio unitario del producto en dólares estadounidenses.
+          - name: name
+            data_type: varchar
+            description: nombre del producto.
+          - name: inventory
+            data_type: number
+            description: cantidad del producto en inventario.
+          - name: _fivetran_deleted
+            data_type: boolean
+            description: campo de Fivetran.
           - name: _FIVETRAN_SYNCED
+            data_type: timestamp_tz
+            description: marca de tiempo que indica cuándo los datos se cargaron en la tabla de staging, incluyendo información sobre la zona horaria.
 
       - name: promos
-        loaded_at_field: _FIVETRAN_SYNCED
+        description: tabla staging para datos promocionales.
         columns:
-          - name: PROMO_ID
-          - name: DISCOUNT
-          - name: STATUS
-          - name: _FIVETRAN_DELETED
-          - name: _FIVETRAN_SYNCED
+          - name: promo_id
+            data_type: varchar
+            description: identificador de la promoción.
+          - name: discount
+            data_type: float
+            description: porcentaje de descuento de la promoción.
+          - name: status
+            data_type: varchar
+            description: estado de la promoción (activo/inactivo).
+          - name: _fivetran_deleted
+            data_type: boolean
+            description: indicador de si el registro fue eliminado en Fivetran.
+          - name: _fivetran_synced
+            data_type: timestamp_tz
+            description: marca de tiempo que indica cuándo los datos se cargaron en la tabla de staging, incluyendo información sobre la zona horaria.
 
       - name: users
-        loaded_at_field: _FIVETRAN_SYNCED
+        description: tabla staging para datos de usuarios/clientes.
         columns:
-          - name: USER_ID
-          - name: UPDATED_AT
-          - name: ADDRESS_ID
-          - name: LAST_NAME
-          - name: CREATED_AT
-          - name: PHONE_NUMBER
-          - name: TOTAL_ORDERS
-          - name: FIRST_NAME
-          - name: EMAIL
-          - name: _FIVETRAN_DELETED
-          - name: _FIVETRAN_SYNCED
+          - name: user_id
+            data_type: varchar
+            description: identificador del usuario.
+          - name: address_id
+            data_type: varchar
+            description: identificador de la dirección del usuario.
+          - name: first_name
+            data_type: varchar
+            description: nombre del usuario.
+          - name: last_name
+            data_type: varchar
+            description: apellido del usuario.
+          - name: email
+            data_type: varchar
+            description: dirección de correo electrónico del usuario.
+          - name: phone_number
+            data_type: varchar
+            description: número de teléfono del usuario.
+          - name: created_at
+            data_type: date
+            description: marca de tiempo que indica cuándo se creó el usuario, en UTC.
+          - name: updated_at
+            data_type: date
+            description: marca de tiempo que indica cuándo se actualizó por última vez el registro, en UTC.
+          - name: _fivetran_deleted
+            data_type: boolean
+            description: indicador de si el registro fue eliminado en Fivetran.
+          - name: _fivetran_synced
+            data_type: timestamp_tz
+            description: marca de tiempo que indica cuándo los datos se cargaron en la tabla de staging, incluyendo información sobre la zona horaria.
