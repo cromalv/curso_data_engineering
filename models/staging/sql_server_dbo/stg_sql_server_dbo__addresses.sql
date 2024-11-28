@@ -1,29 +1,23 @@
-{{
-  config(
-    materialized='view'
-  )
-}}
+with addresses as(
 
-
-with source as (
-
-    select * from {{ source('sql_server_dbo', 'addresses') }}
-
+    select * 
+    from {{ source('src_sql_server_dbo', 'addresses') }}
+),
+no_address_row as(
+     select * from (values('no_address','unknown','unknown','unknown','unknown','1900-01-01'))
 ),
 
-renamed as (
-
-    select
-        ADDRESS_ID,
-        LPAD(ZIPCODE, 5, '0') AS ZIPCODE,
-        UPPER(COUNTRY) AS COUNTRY,
-        INITCAP(ADDRESS) AS ADDRESS,
-        UPPER(STATE) AS STATE,
-        _FIVETRAN_DELETED,
-        _FIVETRAN_SYNCED
-
-    from source
-
+stg_addresses as(
+select
+    address_id::varchar(50) as address_id,
+    country::varchar(50) as country,
+    state::varchar(50) as state,
+    zipcode::varchar(50) as zipcode,
+    address::varchar(100) as address,
+    _FIVETRAN_SYNCED as date_load
+from addresses
 )
 
-select * from renamed
+select *  from stg_addresses
+union all
+select * from no_address_row

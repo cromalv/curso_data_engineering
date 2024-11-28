@@ -2,277 +2,433 @@ version: 2
 
 models:
   - name: stg_sql_server_dbo__addresses
-    description: "Modelo que representa las direcciones de los usuarios."
+    description: una tabla que muestra las direcciones de residencia de los usuarios/clientes, y también la dirección de envío para los pedidos.
     columns:
       - name: address_id
         data_type: varchar
-        description: "Identificador único para la dirección."
-
-      - name: zipcode
-        data_type: varchar
-        description: "Código postal de la dirección."         
+        description: una clave primaria de la base de datos fuente.
+        tests:
+          - unique
+          - not_null
 
       - name: country
         data_type: varchar
-        description: "País asociado a la dirección."
-          
-      - name: address
-        data_type: varchar
-        description: "Texto que describe la dirección completa."         
-
+        description: el país donde se encuentra una dirección.
       - name: state
         data_type: varchar
-        description: "Estado o región de la dirección."
-
-      - name: _fivetran_deleted
-        data_type: boolean
-        description: "Indica si el registro fue eliminado por Fivetran."
-
-      - name: _fivetran_synced
+        description: el estado donde se encuentra una dirección.
+      - name: zipcode
+        data_type: varchar
+        description: el código postal donde se encuentra una dirección.
+      - name: address
+        data_type: varchar
+        description: la dirección (calle, número, número de apartamento, etc.).
+      - name: date_load
         data_type: timestamp_tz
-        description: "Fecha y hora de sincronización del registro."
+        description: muestra la marca de tiempo en la que se cargó un registro en la tabla fuente.
 
   - name: stg_sql_server_dbo__events
-    description: "Modelo que representa los eventos generados por los usuarios."
+    description: tabla fuente para datos de eventos, principalmente el comportamiento de nuestros prospectos en el sitio web.
     columns:
       - name: event_id
         data_type: varchar
-        description: "Identificador único para el evento."
+        description: identificador clave primaria para el evento. Un evento es una interacción con el sitio web, como ver una página de producto, agregar un producto al carrito, realizar un pago, etc.
         tests:
-          
-          - unique: {}
-
-      - name: page_url
-        data_type: varchar
-        description: "URL de la página donde ocurrió el evento."
-
-      - name: event_type
-        data_type: varchar
-        description: "Tipo de evento (por ejemplo, clic, vista)."          
-
-      - name: user_id
-        data_type: varchar
-        description: "Identificador del usuario asociado al evento."
-
-      - name: product_id
-        data_type: varchar
-        description: "Identificador del producto asociado al evento."
+          - unique
+          - not_null
 
       - name: session_id
         data_type: varchar
-        description: "Identificador de la sesión del usuario."
-
-      - name: created_at
-        data_type: timestamp_ntz
-        description: "Fecha y hora de creación del evento."
-          
-      - name: order_id
-        data_type: varchar
-        description: "Identificador del pedido asociado al evento (si aplica)."
-
-      - name: _fivetran_deleted
-        data_type: boolean
-        description: "Indica si el registro fue eliminado por Fivetran."          
-
-      - name: _fivetran_synced
-        data_type: timestamp_tz
-        description: "Fecha y hora de sincronización del registro."      
-
-  - name: stg_sql_server_dbo__order_items
-    description: "Modelo que representa los elementos individuales dentro de los pedidos."
-    columns:
-      - name: order_id
-        data_type: varchar
-        description: "Identificador del pedido asociado al elemento."
-
-      - name: product_id
-        data_type: varchar
-        description: "Identificador del producto dentro del pedido."
-          
-      - name: quantity
-        data_type: number
-        description: "Cantidad del producto en el pedido."
-
-      - name: _fivetran_deleted
-        data_type: boolean
-        description: "Indica si el registro fue eliminado por Fivetran."
-
-      - name: _fivetran_synced
-        data_type: timestamp_tz
-        description: "Fecha y hora de sincronización del registro."
-
-  - name: stg_sql_server_dbo__orders
-    description: "Modelo que representa los pedidos realizados por los usuarios."
-    columns:
-      - name: order_id
-        data_type: varchar
-        description: "Identificador único del pedido."
-
-      - name: shipping_service
-        data_type: varchar
-        description: "Servicio de envío utilizado para el pedido."
-
-      - name: shipping_cost
-        data_type: float
-        description: "Costo del envío del pedido."
-
-      - name: address_id
-        data_type: varchar
-        description: "Identificador de la dirección asociada al pedido."
-
-      - name: created_at
-        data_type: timestamp_tz
-        description: "Fecha y hora de creación del pedido."
-
-      - name: promo_id
-        data_type: varchar
-        description: "Identificador de la promoción utilizada (si aplica)."
-
-      - name: estimated_delivery_at
-        data_type: timestamp_tz
-        description: "Fecha estimada de entrega del pedido."
-
-      - name: order_cost
-        data_type: float
-        description: "Costo total del pedido."
+        description: identificador clave primaria para la sesión de usuario. Un usuario puede estar en 1 sesión e interactuar con el sitio web, lo que significa que una sesión puede tener varios event_id.
+        tests:
+          - not_null
 
       - name: user_id
         data_type: varchar
-        description: "Identificador del usuario que realizó el pedido."
+        description: identificador clave primaria para el usuario.
+        tests:
+          - not_null
+          - relationships:
+              to: ref('stg_users')
+              field: user_id
 
-      - name: order_total
-        data_type: float
-        description: "Total del pedido, incluyendo costos y descuentos."
-
-      - name: delivered_at
-        data_type: timestamp_tz
-        description: "Fecha y hora de entrega del pedido."
-
-      - name: tracking_id
+      - name: event_type
         data_type: varchar
-        description: "Identificador de seguimiento del pedido."
+        description: el tipo de evento_id (por ejemplo, 'page_view', 'add-to-cart', 'checkout', 'package_shipped').
 
-      - name: status
-        data_type: varchar
-        description: "Estado actual del pedido (por ejemplo, entregado, pendiente)."
-
-          
-
-      - name: _fivetran_deleted
-        data_type: boolean
-        description: "Indica si el registro fue eliminado por Fivetran."
-
-          
-
-      - name: _fivetran_synced
-        data_type: timestamp_tz
-        description: "Fecha y hora de sincronización del registro."
-
-          
-
-  - name: stg_sql_server_dbo__products
-    description: "Modelo que representa los productos disponibles en el sistema."
-    columns:
       - name: product_id
         data_type: varchar
-        description: "Identificador único del producto."
+        description: identificador clave primaria para el producto asociado con el evento.
         tests:
-          
-          - unique: {}
+          - not_null
+          - relationships:
+              to: ref('stg_products')
+              field: product_id
 
-      - name: price
-        data_type: float
-        description: "Precio del producto."
-
-      - name: name
+      - name: order_id
         data_type: varchar
-        description: "Nombre del producto."
+        description: identificador clave primaria para el pedido asociado con el evento.
+        tests:
+          - not_null
 
-          
+      - name: created_at_utc
+        data_type: timestamp_ntz
+        description: marca de tiempo que indica cuándo ocurrió el evento en el Tiempo Universal Coordinado (UTC).
+        tests:
+          - not_null
 
-      - name: inventory
-        data_type: number
-        description: "Cantidad en inventario del producto."
+      - name: page_url
+        data_type: varchar
+        description: URL asociada con el evento.
+        tests:
+          - not_null
 
-
-      - name: _fivetran_deleted
-        data_type: boolean
-        description: "Indica si el registro fue eliminado por Fivetran."
-
-          
-
-      - name: _fivetran_synced
+      - name: date_load
         data_type: timestamp_tz
-        description: "Fecha y hora de sincronización del registro."
+        description: marca de tiempo que indica cuándo se cargaron los datos en la tabla de staging, incluyendo información de zona horaria.
 
-
-  - name: stg_sql_server_dbo__promos
-    description: "Modelo que representa las promociones aplicadas en los pedidos."
+  - name: stg_sql_server_dbo__order_items
+    description: tabla de staging para datos de artículos de pedidos. Tiene la máxima granularidad, lo que significa que un order_id puede tener varios product_id con diferentes cantidades.
     columns:
-      - name: promo_id
+      - name: order_id
         data_type: varchar
-        description: "Identificador único de la promoción."
+        description: identificador del pedido.
         tests:
-          
-          - unique: {}
+          - not_null
+          - relationships:
+              to: ref('stg_orders')
+              field: order_id
 
-      - name: discount
-        data_type: number
-        description: "Descuento aplicado por la promoción."
-
-      - name: status
+      - name: product_id
         data_type: varchar
-        description: "Estado de la promoción (activa o inactiva)."
+        description: identificador del producto.
+        tests:
+          - not_null
 
-          
+      - name: quantity_sold
+        data_type: number
+        description: cantidad de producto vendida.
+        tests:
+          - not_null
 
-      - name: _fivetran_deleted
-        data_type: boolean
-        description: "Indica si el registro fue eliminado por Fivetran."
-
-          
-
-      - name: _fivetran_synced
+      - name: date_load
         data_type: timestamp_tz
-        description: "Fecha y hora de sincronización del registro."
+        description: marca de tiempo que indica cuándo se cargaron los datos en la tabla de staging, incluyendo información de zona horaria.
+
+      - name: batch_id
+        data_type: varchar
+        description: un hash para identificar cuándo se ejecutó el modelo incremental.
+
+
+
+      - name: stg_sql_server_dbo__orders
+        description: Tabla de staging para datos de pedidos. Tiene menos granularidad que "order_items", ya que agrupa los productos de un pedido y tiene información más relevante.
+        columns:
+          - name: order_id
+            data_type: varchar
+            description: Identificador del pedido.
+            tests:
+              - unique
+              - not_null
+
+          - name: user_id
+            data_type: varchar
+            description: Identificador del usuario.
+            tests:
+              - not_null
+              - relationships:
+                  to: ref('stg_users')
+                  field: user_id
+
+          - name: address_id
+            data_type: varchar
+            description: Identificador para la dirección de entrega, y nota, puede ser diferente de la dirección de residencia del usuario.
+            tests:
+              - not_null
+              - relationships:
+                  to: ref('stg_addresses')
+                  field: address_id
+
+          - name: promo_id
+            data_type: varchar
+            description: Identificador de la promoción.
+            tests:
+              - not_null
+              - relationships:
+                  to: ref('stg_promos')
+                  field: promo_id
+
+          - name: status
+            data_type: varchar
+            description: Estado del pedido.
+            tests:
+              - not_null
+              - accepted_values:
+                  values: ['no_status', 'preparing', 'shipped', 'delivered']
+
+          - name: tracking_id
+            data_type: varchar
+            description: Identificador para el seguimiento del pedido.
+
+          - name: shipping_service
+            data_type: varchar
+            description: Nombre de la empresa de servicio de envío que entrega un pedido.
+
+          - name: created_at_utc
+            data_type: timestamp_ntz
+            description: Marca de tiempo que indica cuándo se creó el pedido en el Tiempo Universal Coordinado (UTC).
+            tests:
+              - not_null
+
+          - name: estimated_delivery_at_utc
+            data_type: timestamp_ntz
+            description: Marca de tiempo estimada para la entrega en el Tiempo Universal Coordinado (UTC) de un pedido.
+
+          - name: delivered_at_utc
+            data_type: timestamp_ntz
+            description: Marca de tiempo estimada de entrega en el Tiempo Universal Coordinado (UTC).
+
+          - name: order_cost_usd
+            data_type: number
+            description: Costo del pedido en dólares estadounidenses.
+
+          - name: shipping_cost_usd
+            data_type: number
+            description: Costo de envío de un pedido en dólares estadounidenses.
+
+          - name: order_total_usd
+            data_type: number
+            description: Costo total del pedido en dólares estadounidenses (= order_cost - discount + shipping_cost).
+            tests:
+              - not_null
+
+          - name: _fivetran_synced
+            data_type: timestamp_ntz
+            description: Marca de tiempo que indica cuándo se cargaron los datos en la tabla de staging, incluyendo información de zona horaria.
+
+          - name: batch_id
+            data_type: varchar
+            description: Un hash para identificar cuándo se ejecutó el modelo incremental.
+
+      - name: stg_sql_server_dbo__products
+        description: Tabla fuente para datos de productos.
+        columns:
+          - name: product_id
+            data_type: varchar
+            description: Identificador del producto.
+            tests:
+              - unique
+              - not_null
+
+          - name: product_name
+            data_type: varchar
+            description: Nombre del producto.
+            tests:
+              - not_null
+
+          - name: msrp_price_usd
+            data_type: number
+            description: Precio unitario del producto en dólares estadounidenses.
+            tests:
+              - not_null
+
+          - name: inventory
+            data_type: number
+            description: Cantidad del producto en inventario.
+            tests:
+              - not_null
+
+          - name: updated_at
+            data_type: timestamp_tz
+            description: Marca de tiempo que indica cuándo se cargaron los datos en la tabla de staging, incluyendo información de zona horaria.
+
+      - name: stg_sql_server_dbo__promos
+        description: Tabla de staging para datos promocionales.
+        columns:
+          - name: promo_id
+            data_type: varchar
+            description: Identificador de la promoción.
+            tests:
+              - unique
+              - not_null
+
+          - name: promo_discount_percent
+            data_type: float
+            description: Porcentaje de descuento de la promoción.
+            tests:
+              - not_null
+
+          - name: promo_status
+            data_type: varchar
+            description: Estado de la promoción (activo/inactivo).
+            tests:
+              - not_null
+              - accepted_values:
+                  values: ['active', 'inactive']
+
+          - name: date_load
+            data_type: timestamp_tz
+            description: Marca de tiempo que indica cuándo se cargaron los datos en la tabla de staging, incluyendo información de zona horaria.
+
+      - name: stg_sql_server_dbo__state
+        description: Tabla de staging para datos de estados.
+        columns:
+          - name: state
+            data_type: varchar
+            description: Nombre o código que representa un estado.
+            tests:
+              - unique
+              - not_null
 
 
   - name: stg_sql_server_dbo__users
-    description: "Modelo que representa a los usuarios registrados en la tienda."
+    description: Tabla de staging para datos de usuarios/clientes.
     columns:
       - name: user_id
         data_type: varchar
-        description: "Identificador único del usuario."
+        description: Identificador del usuario.
         tests:
-          
-          - unique: {}
-
-      - name: name
+          - unique
+          - not_null
+      - name: address_id
         data_type: varchar
-        description: "Nombre del usuario."
-          
-
+        description: Identificador de la dirección del usuario.
+        tests:
+          - not_null
+          - relationships:
+              to: ref('stg_addresses')
+              field: address_id
+      - name: first_name
+        data_type: varchar
+        description: Nombre del usuario.
+        tests:
+          - not_null
+      - name: last_name
+        data_type: varchar
+        description: Apellido del usuario.
+        tests:
+          - not_null
       - name: email
         data_type: varchar
-        description: "Correo electrónico del usuario."
+        description: Dirección de correo electrónico del usuario.
         tests:
-          
-          - unique: {}
-
-      - name: created_at
-        data_type: timestamp_tz
-        description: "Fecha y hora en que se registró el usuario."
-
-          
-
-      - name: _fivetran_deleted
+          - not_null
+      - name: phone_number
+        data_type: varchar
+        description: Número de teléfono del usuario.
+        tests:
+          - not_null
+      - name: created_at_utc
+        data_type: date
+        description: Marca de tiempo que indica cuándo se creó el usuario, en UTC.
+        tests:
+          - not_null
+      - name: updated_at_utc
+        data_type: date
+        description: Marca de tiempo que indica cuándo se actualizó el registro por última vez, en UTC.
+        tests:
+          - not_null
+      - name: row_deleted
         data_type: boolean
-        description: "Indica si el registro fue eliminado por Fivetran."
-
-          
-
-      - name: _fivetran_synced
+        description: Indicador de si el registro fue eliminado desde FIVETRAN.
+      - name: date_load
         data_type: timestamp_tz
-        description: "Fecha y hora de sincronización del registro."
-
-          
+        description: Marca de tiempo que indica cuándo se cargaron los datos en la tabla de staging, incluyendo información de zona horaria.
+  
+  - name: stg_sql_server_dbo__accounting
+    description: Tabla de staging que contiene información contable de empresa
+    columns:
+      - name: scope
+        data_type: varchar
+        description: Tipo de costo en la empresa.
+      - name: type
+        data_type: varchar
+        description: Tipo de costo.
+      - name: vendor
+        data_type: varchar
+        description: Proveedor asociado a la entrada.
+      - name: category
+        data_type: varchar
+        description: Categoría del costo en la entrada contable.
+      - name: description
+        data_type: varchar
+        description: Descripción de la entrada.
+      - name: invoice_date
+        data_type: date
+        description: Fecha de la factura.
+      - name: total_invoice
+        data_type: number
+        description: Monto total asociado a la factura.
+  
+  - name: stg_sql_server_dbo__shipping_agreements
+    description: Tabla que contiene información sobre acuerdos de envío relacionados con entregas.
+    columns:
+      - name: shipping_service
+        data_type: varchar
+        description: Nombre del proveedor de servicio de envío.
+      - name: price_usd_per_lbs
+        data_type: number
+        description: Precio acordado por libra para el envío.
+      - name: begin_eff_date
+        data_type: timestamp_ntz
+        description: Fecha de inicio de vigencia del acuerdo de envío.
+      - name: end_eff_date
+        data_type: timestamp_ntz
+        description: Fecha de fin de vigencia del acuerdo de envío.
+  
+  - name: stg_sql_server_dbo__product_features
+    description: Tabla de staging que contiene información de características de productos.
+    columns:
+      - name: product_id
+        data_type: varchar
+        description: Identificador del producto.
+      - name: product_cost_usd
+        data_type: number
+        description: Costo del producto en un momento específico.
+      - name: product_weight_lbs
+        data_type: number
+        description: Peso del producto en libras.
+      - name: begin_eff_date
+        data_type: timestamp_ntz
+        description: Fecha de inicio de vigencia del costo del producto.
+      - name: end_eff_date
+        data_type: timestamp_ntz
+        description: Fecha de fin de vigencia del costo del producto.
+  
+  - name: stg_sql_server_dbo__price_history
+    description: Tabla de staging que contiene información histórica de precios de productos.
+    columns:
+      - name: product_id
+        data_type: varchar
+        description: Identificador del producto.
+      - name: price_usd
+        data_type: number
+        description: Precio del producto en un momento específico.
+      - name: product_name
+        data_type: varchar
+        description: Nombre del producto.
+      - name: begin_eff_date
+        data_type: timestamp_ntz
+        description: Fecha de inicio de vigencia del precio.
+      - name: end_eff_date
+        data_type: timestamp_ntz
+        description: Fecha de fin de vigencia del precio.
+  
+  - name: stg_sql_server_dbo__wages
+    description: Tabla que contiene el identificador del empleado y las fechas (por mes) en las que reciben un pago.
+    columns:
+      - name: emp_id
+        data_type: varchar
+        description: Identificador único del empleado.
+      - name: full_name
+        data_type: varchar
+        description: Concatenación del nombre y apellido del empleado.
+      - name: department
+        data_type: varchar
+        description: Departamento en el que trabaja un empleado en el momento.
+      - name: wage_month
+        data_type: date
+        description: Fecha (mes) en la que el empleado recibió su salario.
+      - name: monthly_wage
+        data_type: number
+        description: Salario anual dividido por 12 meses, que da el pago mensual a un empleado en particular.
