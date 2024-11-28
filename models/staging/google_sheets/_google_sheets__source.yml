@@ -1,25 +1,56 @@
 version: 2
+
 sources:
-  - name: google_sheets
-    schema: google_sheets
-    database: "{{ env_var('DBT_ENVIRONMENTS') }}_BRONZE_DB"
+
+  - name: src_google_sheets # name of the source 
+    description: a source database from snowflake datawarehouse. It has monthly sales target table.
+      
+    schema: google_sheets # this is the schema our raw data lives in
+    database: "{{ env_var('DBT_ENVIRONMENTS') }}_BRONZE_DB" # this is the name of our database
+
+
+#    database antigua: ALUMNO25_DEV_BRONZE_DB
+
     quoting:
       database: false
       schema: false
       identifier: false
+
     freshness:
-      warn_after:
-        count: 24
-        period: hour
-      error_after:
-        count: 72
-        period: hour
+      warn_after: {count: 24, period: day}
+      error_after: {count: 48, period: day}
+
     tables:
+
       - name: budget
         loaded_at_field: _fivetran_synced
+        description: The budget table represents the monthly sales target for each product.
+
         columns:
           - name: _row
+            description: primary key from source.
+            tests:
+              - unique
+              - not_null
+              
           - name: product_id
+            description: identifies the product_id of each product.
+            tests:
+              - not_null
+              
+
           - name: quantity
+            description: the monthly quantity target for each product.
+            tests:
+              - not_null
+              - positive_values
+              
+            
           - name: month
-          - name: _fivetran_synced
+            description: identifies the month in each target must be accomplished.
+            tests:
+              - not_null
+
+          - name: date_load
+            description: identifies the timestamp in which a record was loaded to the source table.
+              

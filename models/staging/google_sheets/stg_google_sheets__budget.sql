@@ -1,27 +1,18 @@
-{{
-  config(
-    materialized='view'
-  )
-}}
+with src_budget_products as(
 
-
-with source as (
-
-    select * from {{ source('google_sheets', 'budget') }}
-
+    select *
+    from {{ source('src_google_sheets', 'budget') }}
 ),
 
-renamed as (
-
+budget as (
     select
-        _row,
-        quantity,
-        month,
+        {{dbt_utils.generate_surrogate_key( ['_row'])}} as budget_sk,
         product_id,
-        _fivetran_synced
+        quantity as target_quantity,
+        month as month_budget,
+        _fivetran_synced AS date_load
+    from src_budget_products
+    order by 4 asc
+    )
 
-    from source
-
-)
-
-select * from renamed
+select * from budget
