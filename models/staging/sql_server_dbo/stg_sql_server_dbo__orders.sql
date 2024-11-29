@@ -18,7 +18,7 @@ with orders as(
     {% endif %}
 ),
 
-stg_orders as(
+stg_sql_server_dbo__orders as(
     select
     -- keys
         order_id::varchar(50) as order_id,
@@ -47,31 +47,4 @@ stg_orders as(
     from orders
 )
 
-select *  from stg_orders
-
-
-
-/*
-no_order_row as(
-select * from (values ('no_order',
-                        'no_user',
-                        'no_address',
-                        'no_promo',
-                        'no_status',
-                        'not_assigned',
-                        'not_assigned',
-                        '1900-01-01',
-                        null,
-                        null,
-                        0,
-                        0,
-                        0,
-                        '1900-01-01' ))
-)
-
-select *  from stg_orders
-{% if is_incremental() == false %}
-union all
-select * from no_order_row
-{% endif %}
-*/
+select *  from stg_sql_server_dbo__orders

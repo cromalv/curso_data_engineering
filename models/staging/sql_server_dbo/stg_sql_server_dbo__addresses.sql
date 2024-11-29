@@ -1,4 +1,4 @@
-with addresses as(
+    with addresses as(
 
     select * 
     from {{ source('src_sql_server_dbo', 'addresses') }}

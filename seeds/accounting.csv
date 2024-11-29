@@ -1,0 +1,11 @@
+scope,type,vendor,category,description,invoice_date,total
+structural,fixed,Host.ai,software,hosting website and infraestructure,2021-02-01,100
+structural,fixed,Microsoft Inc.,software,office365,2021-02-01,80
+structural,variable,Snowflake Inc.,software,data warehouse,2021-02-28,150
+structural,variable,Inter IKEA Systems B.V.,office,furniture,2021-02-28,500
+structural,fixed,Best Buy Co. Inc.,office,hardware,2021-02-01,2000
+structural,fixed,Landlord,rent,rent of the small office,2021-02-01,2500
+operative,variable,Meta Platforms Inc.,marketing,advertising campaings,2021-02-20,18500
+operative,variable,Stripe LLC,payments,fee for online payments,2021-02-28,1370.27
+operative,variable,Pineapple Express LLC,outsourcing,dropshipping fees,2021-02-28,5000
+operative,variable,Airbnb,travel,business meeting,2021-03-15,3000
