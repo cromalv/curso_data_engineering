@@ -119,167 +119,141 @@ models:
         data_type: varchar
         description: un hash para identificar cuándo se ejecutó el modelo incremental.
 
+  - name: stg_sql_server_dbo__orders
+    description: Tabla de staging para datos de pedidos. Tiene menos granularidad que "order_items", ya que agrupa los productos de un pedido y tiene información más relevante.
+    columns:
+        - name: order_id
+          data_type: varchar
+          description: Identificador del pedido.
+          tests:
+            - unique
+            - not_null
+        - name: user_id
+          data_type: varchar
+          description: Identificador del usuario.
+          tests:
+            - not_null
+            - relationships:
+                to: ref('stg_users')
+                field: user_id
+        - name: address_id
+          data_type: varchar
+          description: Identificador para la dirección de entrega, y nota, puede ser diferente de la dirección de residencia del usuario.
+          tests:
+            - not_null
+            - relationships:
+                to: ref('stg_addresses')
+                field: address_id
+        - name: promo_id
+          data_type: varchar
+          description: Identificador de la promoción.
+          tests:
+            - not_null
+            - relationships:
+                to: ref('stg_promos')
+                field: promo_id
+        - name: status
+          data_type: varchar
+          description: Estado del pedido.
+          tests:
+            - not_null
+            - accepted_values:
+                values: ['no_status', 'preparing', 'shipped', 'delivered']
+        - name: tracking_id
+          data_type: varchar
+          description: Identificador para el seguimiento del pedido.
+        - name: shipping_service
+          data_type: varchar
+          description: Nombre de la empresa de servicio de envío que entrega un pedido.
+        - name: created_at_utc
+          data_type: timestamp_ntz
+          description: Marca de tiempo que indica cuándo se creó el pedido en el Tiempo Universal Coordinado (UTC).
+          tests:
+            - not_null
+        - name: estimated_delivery_at_utc
+          data_type: timestamp_ntz
+          description: Marca de tiempo estimada para la entrega en el Tiempo Universal Coordinado (UTC) de un pedido.
+        - name: delivered_at_utc
+          data_type: timestamp_ntz
+          description: Marca de tiempo estimada de entrega en el Tiempo Universal Coordinado (UTC).
+        - name: order_cost_usd
+          data_type: number
+          description: Costo del pedido en dólares estadounidenses.
+        - name: shipping_cost_usd
+          data_type: number
+          description: Costo de envío de un pedido en dólares estadounidenses.
+        - name: order_total_usd
+          data_type: number
+          description: Costo total del pedido en dólares estadounidenses (= order_cost - discount + shipping_cost).
+          tests:
+            - not_null
+        - name: _fivetran_synced
+          data_type: timestamp_ntz
+          description: Marca de tiempo que indica cuándo se cargaron los datos en la tabla de staging, incluyendo información de zona horaria.
+        - name: batch_id
+          data_type: varchar
+          description: Un hash para identificar cuándo se ejecutó el modelo incremental.
 
-
-      - name: stg_sql_server_dbo__orders
-        description: Tabla de staging para datos de pedidos. Tiene menos granularidad que "order_items", ya que agrupa los productos de un pedido y tiene información más relevante.
-        columns:
-          - name: order_id
-            data_type: varchar
-            description: Identificador del pedido.
-            tests:
-              - unique
-              - not_null
-
-          - name: user_id
-            data_type: varchar
-            description: Identificador del usuario.
-            tests:
-              - not_null
-              - relationships:
-                  to: ref('stg_users')
-                  field: user_id
-
-          - name: address_id
-            data_type: varchar
-            description: Identificador para la dirección de entrega, y nota, puede ser diferente de la dirección de residencia del usuario.
-            tests:
-              - not_null
-              - relationships:
-                  to: ref('stg_addresses')
-                  field: address_id
-
-          - name: promo_id
-            data_type: varchar
-            description: Identificador de la promoción.
-            tests:
-              - not_null
-              - relationships:
-                  to: ref('stg_promos')
-                  field: promo_id
-
-          - name: status
-            data_type: varchar
-            description: Estado del pedido.
-            tests:
-              - not_null
-              - accepted_values:
-                  values: ['no_status', 'preparing', 'shipped', 'delivered']
-
-          - name: tracking_id
-            data_type: varchar
-            description: Identificador para el seguimiento del pedido.
-
-          - name: shipping_service
-            data_type: varchar
-            description: Nombre de la empresa de servicio de envío que entrega un pedido.
-
-          - name: created_at_utc
-            data_type: timestamp_ntz
-            description: Marca de tiempo que indica cuándo se creó el pedido en el Tiempo Universal Coordinado (UTC).
-            tests:
-              - not_null
-
-          - name: estimated_delivery_at_utc
-            data_type: timestamp_ntz
-            description: Marca de tiempo estimada para la entrega en el Tiempo Universal Coordinado (UTC) de un pedido.
-
-          - name: delivered_at_utc
-            data_type: timestamp_ntz
-            description: Marca de tiempo estimada de entrega en el Tiempo Universal Coordinado (UTC).
-
-          - name: order_cost_usd
-            data_type: number
-            description: Costo del pedido en dólares estadounidenses.
-
-          - name: shipping_cost_usd
-            data_type: number
-            description: Costo de envío de un pedido en dólares estadounidenses.
-
-          - name: order_total_usd
-            data_type: number
-            description: Costo total del pedido en dólares estadounidenses (= order_cost - discount + shipping_cost).
-            tests:
-              - not_null
-
-          - name: _fivetran_synced
-            data_type: timestamp_ntz
-            description: Marca de tiempo que indica cuándo se cargaron los datos en la tabla de staging, incluyendo información de zona horaria.
-
-          - name: batch_id
-            data_type: varchar
-            description: Un hash para identificar cuándo se ejecutó el modelo incremental.
-
-      - name: stg_sql_server_dbo__products
-        description: Tabla fuente para datos de productos.
-        columns:
-          - name: product_id
-            data_type: varchar
-            description: Identificador del producto.
-            tests:
-              - unique
-              - not_null
-
-          - name: product_name
-            data_type: varchar
-            description: Nombre del producto.
-            tests:
-              - not_null
-
-          - name: msrp_price_usd
-            data_type: number
-            description: Precio unitario del producto en dólares estadounidenses.
-            tests:
-              - not_null
-
-          - name: inventory
-            data_type: number
-            description: Cantidad del producto en inventario.
-            tests:
-              - not_null
-
-          - name: updated_at
-            data_type: timestamp_tz
-            description: Marca de tiempo que indica cuándo se cargaron los datos en la tabla de staging, incluyendo información de zona horaria.
-
-      - name: stg_sql_server_dbo__promos
-        description: Tabla de staging para datos promocionales.
-        columns:
-          - name: promo_id
-            data_type: varchar
-            description: Identificador de la promoción.
-            tests:
-              - unique
-              - not_null
-
-          - name: promo_discount_percent
-            data_type: float
-            description: Porcentaje de descuento de la promoción.
-            tests:
-              - not_null
-
-          - name: promo_status
-            data_type: varchar
-            description: Estado de la promoción (activo/inactivo).
-            tests:
-              - not_null
-              - accepted_values:
-                  values: ['active', 'inactive']
-
-          - name: date_load
-            data_type: timestamp_tz
-            description: Marca de tiempo que indica cuándo se cargaron los datos en la tabla de staging, incluyendo información de zona horaria.
-
-      - name: stg_sql_server_dbo__state
-        description: Tabla de staging para datos de estados.
-        columns:
-          - name: state
-            data_type: varchar
-            description: Nombre o código que representa un estado.
-            tests:
-              - unique
-              - not_null
-
+  - name: stg_sql_server_dbo__products
+    description: Tabla fuente para datos de productos.
+    columns:
+      - name: product_id
+        data_type: varchar
+        description: Identificador del producto.
+        tests:
+          - unique
+          - not_null
+      - name: product_name
+        data_type: varchar
+        description: Nombre del producto.
+        tests:
+          - not_null
+      - name: msrp_price_usd
+        data_type: number
+        description: Precio unitario del producto en dólares estadounidenses.
+        tests:
+          - not_null
+      - name: inventory
+        data_type: number
+        description: Cantidad del producto en inventario.
+        tests:
+          - not_null
+      - name: updated_at
+        data_type: timestamp_tz
+        description: Marca de tiempo que indica cuándo se cargaron los datos en la tabla de staging, incluyendo información de zona horaria.
+  - name: stg_sql_server_dbo__promos
+    description: Tabla de staging para datos promocionales.
+    columns:
+        - name: promo_id
+          data_type: varchar
+          description: Identificador de la promoción.
+          tests:
+            - unique
+            - not_null
+        - name: promo_discount_percent
+          data_type: float
+          description: Porcentaje de descuento de la promoción.
+          tests:
+            - not_null
+        - name: promo_status
+          data_type: varchar
+          description: Estado de la promoción (activo/inactivo).
+          tests:
+            - not_null
+            - accepted_values:
+                values: ['active', 'inactive']
+        - name: date_load
+          data_type: timestamp_tz
+          description: Marca de tiempo que indica cuándo se cargaron los datos en la tabla de staging, incluyendo información de zona horaria.
+  - name: stg_sql_server_dbo__state
+    description: Tabla de staging para datos de estados.
+    columns:
+      - name: state
+        data_type: varchar
+        description: Nombre o código que representa un estado.
+        tests:
+          - unique
+          - not_null
 
   - name: stg_sql_server_dbo__users
     description: Tabla de staging para datos de usuarios/clientes.
