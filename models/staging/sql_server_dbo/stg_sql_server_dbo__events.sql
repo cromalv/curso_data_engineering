@@ -20,7 +20,7 @@ with snap_events as(
     {% endif %}
 ),
 
-stg_events as(
+stg_sql_server_dbo__events as(
 select
     event_id::varchar(50) as event_id,
     session_id::varchar(50) as session_id,
@@ -38,4 +38,4 @@ from snap_events
 order by 7 asc
 )
 
-select *  from stg__sql_server_dbo__events
+select *  from stg_sql_server_dbo__events

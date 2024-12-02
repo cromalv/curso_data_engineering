@@ -3,4 +3,4 @@
 --si pasa, you re crazy bro
 SELECT *
 FROM {{ ref('fact_sales_orders') }}
-WHERE delivered_at_utc < created_at_utc
+WHERE delivered_at_utc < created_at_utcQ
