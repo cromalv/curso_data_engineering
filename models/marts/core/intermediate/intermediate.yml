@@ -1,0 +1,160 @@
+models:
+  - name: int_orders
+    description: un modelo intermedio que reúne información de las fuentes "orders" y "order_items", y la conecta con algunas tablas importantes ("price history", "product features", "shipping agreement" y "accounting"), incluyendo también el campo "shipping revenue" con la granularidad de "order_items". También se realizaron algunos cálculos más complejos.
+    columns:
+
+      - name: order_id
+        data_type: varchar
+        description: el ID del pedido. No es único y no puede ser nulo.
+        tests:
+          - not_null
+          - relationships:
+              to: ref('stg_orders')
+              field: order_id
+          
+      - name: user_id
+        data_type: varchar
+        description: el ID del usuario. No es único y no puede ser nulo.
+        tests:
+          - not_null
+          - relationships:
+              to: ref('stg_users')
+              field: user_id
+
+      - name: address_id
+        data_type: varchar
+        description: el ID de la dirección a donde se envía el pedido. No es único y no puede ser nulo.
+        tests:
+          - not_null
+          - relationships:
+              to: ref('stg_addresses')
+              field: address_id
+
+      - name: product_id
+        data_type: varchar
+        description: el ID del producto. No es único y no puede ser nulo.
+        tests:
+          - not_null
+          - relationships:
+              to: ref('stg_product')
+              field: product_id
+
+      - name: promo_id
+        data_type: varchar
+        description: el ID de la promoción.
+        tests:
+          - not_null
+          - relationships:
+              to: ref('stg_promos')
+              field: promo_id
+
+      - name: quantity_sold
+        data_type: number
+        description: la cantidad de un producto vendida dentro de un pedido (un ID de pedido puede tener varias filas con productos diferentes).
+        tests:
+          - not_null
+          - positive_values
+
+      - name: unit_price_usd
+        data_type: number
+        description: el precio del producto.
+        tests:
+          - not_null
+          - positive_values
+
+      - name: gross_line_sales_usd
+        data_type: number
+        description: la venta total (quantity_sold * unit_price_usd).
+        tests:
+          - not_null
+          - positive_values
+
+      - name: discount_line_amount_usd
+        data_type: number
+        description: el descuento aplicado a ese producto.
+        tests:
+          - not_null
+          - positive_values
+
+      - name: product_line_cost_usd
+        data_type: number
+        description: el costo de obtener el producto del proveedor.
+        tests:
+          - not_null
+          - positive_values
+
+      - name: shipping_line_revenue_usd
+        data_type: number
+        description: el ingreso cobrado al cliente por el envío.
+        tests:
+          - not_null
+          - positive_values
+
+      - name: shipping_line_cost_usd
+        data_type: number
+        description: el costo que el servicio de envío cobra a la empresa.
+        tests:
+          - not_null
+          - positive_values
+
+      - name: diluded_operative_cost_usd
+        data_type: number
+        description: el costo operativo diluido de un mes determinado (dependiendo de cuándo se realizó el pedido), dividido por el número total de productos vendidos en ese mes y multiplicado por la cantidad de productos vendidos en el contexto de la fila.
+        tests:
+          - not_null
+          - positive_values
+
+      - name: status
+        data_type: varchar
+        description: el estado de un pedido.
+        tests:
+          - not_null
+          - accepted_values:
+              values: ['preparing','shipped','delivered']
+
+      - name: shipping_service
+        data_type: varchar
+        description: el nombre del servicio de envío.
+        tests:
+          - not_null
+          - relationships:
+              to: ref('stg_shipping_agreement')
+              field: shipping_service
+
+      - name: tracking_id
+        data_type: varchar
+        description: el ID de seguimiento de un pedido.
+
+      - name: weight_line_lbs
+        data_type: number
+        description: el peso de la cantidad vendida multiplicado por el peso del producto.
+
+      - name: created_at_utc
+        data_type: timestamp_ntz
+        description: la fecha de creación del registro en UTC.
+        tests:
+          - not_null
+
+      - name: estimated_delivery_at_utc
+        data_type: timestamp_ntz
+        description: la fecha estimada de entrega.
+
+      - name: delivered_at_utc
+        data_type: timestamp_ntz
+        description: la fecha de entrega efectiva.
+
+      - name: created_at_date
+        data_type: date
+        description: la misma columna que created_at_utc pero en formato de fecha.
+
+      - name: order_items_load
+        data_type: varchar
+        description: el timestamp cuando los registros de "order_items" se cargaron en la etapa bronze.
+
+      - name: orders_load
+        data_type: varchar
+        description: el timestamp cuando los registros de "orders" se cargaron en la etapa bronze.
+
+      - name: batch_id
+        data_type: varchar
+        description: un hash para identificar cuándo se ejecutó el modelo incremental.
