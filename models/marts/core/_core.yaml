@@ -1,0 +1,536 @@
+version: 2
+
+models:
+
+
+  - name: dim_date
+    description: a dimensional table for our date dimension.
+    columns:
+      - name: date_key
+        data_type: varchar
+        description: a surrogate key generated to our table with the format YYYYMMDD.
+
+      - name: date_day
+        data_type: date
+        description:  Date of the record in a format YYYY-MM-DD.
+
+      - name: day_of_week_number
+        data_type: number
+        description: Numeric representation of the day of the week.
+
+      - name: day_of_week_name
+        data_type: varchar
+        description: Full name of the day of the week.
+
+      - name: day_of_week_name_short
+        data_type: varchar
+        description: Short name of the day of the week.
+
+      - name: day_of_month_number
+        data_type: number
+        description: Day of the month.
+
+
+
+      - name: month_of_year
+        data_type: number
+        description: Month number of the year.
+
+      - name: month_name
+        data_type: varchar
+        description: Full name of the month.
+
+      - name: month_name_short
+        data_type: varchar
+        description: Short name of the month.
+
+      - name: day_of_year_number
+        data_type: number
+        description: Day of the year.
+
+      - name: week_of_year_number
+        data_type: number
+        description: Week number of the year.
+
+      - name: quarter_of_year_number
+        data_type: number
+        description: Quarter number of the year.
+
+      - name: year_number
+        data_type: number
+        description: Year number.
+
+
+  - name: dim_addresses
+    description: a dimensional table who shows living addresses from the users/customers, and also the shipping address for orders.
+    columns:
+      - name: address_sk
+        data_type: varchar
+        description: a surrogate key generated to the table through "address_id".
+        tests:
+          - unique
+          - not_null
+
+      - name: address_id
+        data_type: varchar
+        description: a primary key from the source database.
+        tests:
+          - unique
+          - not_null
+
+      - name: country
+        data_type: varchar
+        description: the country where an address is located.
+
+      - name: state
+        data_type: varchar
+        description: the state where an address is located.
+
+      - name: zipcode
+        data_type: varchar
+        description: the zipcode where an address is located.
+
+      - name: address
+        data_type: varchar
+        description: the address (street, number, apartment_no,...).
+
+
+   
+  - name: dim_users
+    description: a dimensional table who shows the information of our users.
+    columns:
+      - name: date_key
+        data_type: varchar
+        description: a foreigh key to connect this table with the table "dim_dates".
+        tests:
+          - relationships:
+              to: ref('dim_date')
+              field: date_key
+
+      - name: user_sk
+        data_type: varchar
+        description: a surrogate key generated to our table through "user_id". 
+
+      - name: user_id
+        data_type: varchar
+        description: a primary key from the source database.
+
+      - name: address_sk
+        data_type: varchar
+        description: a foreigh key to connect this table with the table "dim_addresses".
+        tests:
+          - relationships:
+              to: ref('dim_addresses')
+              field: address_sk
+
+      - name: full_name
+        data_type: varchar
+        description: Full name of the user (concat first_name and last_name).
+
+      - name: email
+        data_type: varchar
+        description: Email address of the user.
+
+      - name: phone_number
+        data_type: varchar
+        description: Phone number of the user.
+
+      - name: created_at_utc
+        data_type: timestamp_ltz
+        description: Timestamp indicating when the user was created, in UTC.
+
+      - name: updated_at_utc
+        data_type: timestamp_ltz
+        description: Timestamp indicating when the record was last updated, in UTC.
+
+
+
+
+  - name: dim_products
+    description: a dimensional table who shows the information of our products.
+    columns:
+      - name: product_sk
+        data_type: varchar
+        description: a surrogate key generated to our table through "product_id".
+        tests:
+          - unique
+          - not_null
+
+      - name: product_id
+        data_type: varchar
+        description: a primary key from the source database.
+        tests:
+          - unique
+          - not_null
+
+      - name: product_name
+        data_type: varchar
+        description: Name of the product.
+        tests:
+          - not_null
+
+      - name: msrp_price_usd
+        data_type: number
+        description: Unit price of the product in USD.
+        tests:
+          - not_null
+          - positive_values
+
+      - name: product_weight_lbs
+        data_type: number
+        description: aquisition cost of a unit of  acertain product.
+        tests:
+          - not_null
+          - positive_values
+
+      - name: updated_at
+        data_type: timestamp_ltz
+        description: Timestamp indicating when the record was last updated, in UTC.
+
+
+
+
+  - name: dim_promos
+    description: a dimensional table who shows the information of our promotions.
+    columns:
+      - name: promo_sk
+        data_type: varchar
+        description: a surrogate key generated to our table through "promo_id".
+        tests:
+          - unique
+          - not_null
+
+      - name: promo_id
+        data_type: varchar
+        description: a primary key from the source database.
+        tests:
+          - unique
+          - not_null
+
+      - name: promo_discount_percent
+        data_type: float
+        description: the percentage of discount of a promotion.
+        tests:
+          - not_null
+          - positive_values
+
+      - name: discount_unit
+        data_type: float
+        description: the decimal value of a discount of a promotion (promo_discount_percent/100).
+        tests:
+          - not_null
+          - positive_values
+
+      - name: promo_status
+        data_type: varchar
+        description: the status of a promotion.
+        tests:
+          - not_null
+          - accepted_values:
+              values: ['active','inactive']
+
+
+  - name: dim_shipping_service
+    description: a dimensional table who shows a list of the shipping companies.
+    columns:
+      - name: shipping_service_sk
+        data_type: varchar
+        description: a surrogate key generated to our table through "shipping_service". 
+        tests:
+          - unique
+          - not_null
+          
+      - name: shipping_service
+        data_type: varchar
+        description: the name of the shipping company.
+
+
+  - name: dim_state
+    description: a dimensional table who shows a unique list of the states presented in our addresses history.
+    columns:
+      - name: state_sk
+        data_type: varchar
+        description: a surrogate key generated to our table through "state". 
+
+      - name: state
+        data_type: varchar
+        description: the name of the state.
+
+
+  - name: fact_budget
+    description: the target sales quantities of products.
+    columns:
+      - name: budget_sk
+        data_type: varchar
+        description: a surrogate key generated to the table through "_row" column. 
+
+      - name: product_sk
+        data_type: varchar
+        description: a foreigh key to connect this table with the table "dim_products".
+        tests:
+          - not_null
+          - relationships:
+              to: ref('dim_products')
+              field: product_sk
+
+      - name: target_quantity
+        data_type: number
+        description: the target quantity the company must reach on a certain month for a given product.
+
+      - name: date_key
+        data_type: varchar
+        description: a foreigh key to connect this table with the table "dim_dates".
+        tests:
+          - not_null
+          - relationships:
+              to: ref('dim_date')
+              field: date_key
+
+
+
+  - name: fact_events
+    description: fact table who consists of the measurements and metrics of the online user behaviour.
+    columns:
+      - name: event_id
+        data_type: varchar
+        description: a primary key from the source database. Each 'action' of the user has a unique event_id.
+        tests:
+          - not_null
+
+      - name: session_id
+        data_type: varchar
+        description: identifier of session. A user in 1 session can interact in many ways (several event_id's).
+        tests:
+          - not_null
+
+      - name: event_type
+        data_type: varchar
+        description: a descriptive of an event_id. Actions performed by the user.
+        tests:
+          - accepted_values:
+              values: ['page_view', 'add_to_cart', 'checkout', 'package_shipped']
+          - not_null
+
+      - name: product_sk
+        data_type: varchar
+        description: a foreigh key to connect this table with the table "dim_products".
+        tests:
+          - not_null
+          - relationships:
+              to: ref('dim_products')
+              field: product_sk
+
+      - name: order_id
+        data_type: varchar
+        description: a key that identifies an order.
+        tests:
+          - not_null
+
+      - name: date_key
+        data_type: varchar
+        description: a foreigh key to connect this table with the table "dim_date".
+        tests:
+          - not_null
+          - relationships:
+              to: ref('dim_date')
+              field: date_key
+
+      - name: time_key
+        data_type: varchar
+        description: extracted time from the Timestamp column "created_at_utc" in Coordinated Universal Time (UTC) and converted to a key, for later join the time_table in the BI report.
+
+      - name: created_at_utc
+        data_type: timestamp
+        description: timestamp indicating when the event was created (hour,minute,second).
+
+      - name: time
+        data_type: time
+        description: timestamp indicating when the event was created (hour,minute,second).
+
+      - name: date_load
+        data_type: varchar
+        description: the timestamp when the record was load into bronze stage.
+
+      - name: batch_id
+        data_type: varchar
+        description: a hash to identify when the incremental model was run.
+
+
+
+
+
+  - name: fact_orders
+    description: fact table who consists of the measurements and metrics of the purchase (order) made by a customer.
+    columns:
+
+      - name: date_key
+        data_type: varchar
+        description: a foreigh key to connect this table with the table "dim_date".
+        tests:
+          - not_null
+          - relationships:
+              to: ref('dim_date')
+              field: date_key
+
+      - name: order_sk
+        data_type: varchar
+        description: a surrogate key construct using the columns "user_id", "order_id", "product_id"
+        tests:
+          - not_null
+          - unique
+
+      - name: user_sk
+        data_type: varchar
+        description: a foreigh key to connect this table with the table "dim_customers".
+        tests:
+          - not_null
+          - relationships:
+              to: ref('dim_users')
+              field: user_sk
+
+      - name: address_sk
+        data_type: varchar
+        description: a foreigh key to connect this table with the table "dim_addresses".
+        tests:
+          - not_null
+          - relationships:
+              to: ref('dim_addresses')
+              field: address_sk
+
+      - name: shipping_service_sk
+        data_type: varchar
+        description: a foreigh key to connect this table with the table "dim_shipping_service".
+        tests:
+          - not_null
+          - relationships:
+              to: ref('dim_shipping_service')
+              field: shipping_service_sk
+
+      - name: promo_sk
+        data_type: varchar
+        description: a foreigh key to connect this table with the table "dim_promos".
+        tests:
+          - not_null
+          - relationships:
+              to: ref('dim_promos')
+              field: promo_sk 
+
+      - name: product_sk
+        data_type: varchar
+        description: a foreigh key to connect this table with the table "dim_products".
+        tests:
+          - not_null
+          - relationships:
+              to: ref('dim_products')
+              field: product_sk
+
+      - name: status
+        data_type: varchar
+        description: the status of an order
+        tests:
+          - not_null
+          - accepted_values:
+              values: ['preparing','shipped','delivered']
+
+      - name: quantity_sold
+        data_type: number
+        description: the quantity of a certain product sold (inside a order).
+        tests:
+          - not_null
+          - positive_values
+
+      - name: unit_price_usd
+        data_type: number
+        description: unit price of a product.  
+        tests:
+          - not_null
+          - positive_values
+
+      - name: gross_line_sales_usd
+        data_type: number
+        description: gross value of a sale (equal to quantity_sold * unit_price_usd)
+        tests:
+          - positive_values
+
+      - name: discount_line_amount_usd
+        data_type: number
+        description: extended discount amount of a line order. Equal to (discount_decimal * quantity_sold*unit_price_usd)
+        tests:
+          - positive_values
+
+      - name: shipping_line_revenue_usd
+        data_type: number
+        description: weighted shipping revenue in usd per line of products in a given order.
+        tests:
+          - positive_values
+
+      - name: shipping_line_cost_usd
+        data_type: number
+        description: shipping cost in usd per line of product in a given order based in the shipping_agreement.
+        tests:
+          - positive_values
+
+      - name: product_line_cost_usd
+        data_type: number
+        description: the cost of an product based on the product_features table.
+        tests:
+          - positive_values
+
+      - name: diluded_operative_cost_usd
+        data_type: number
+        description: weighted operative costs of the company in usd based on the operative costs in a given month divided by the number of products sold on a certain month. 
+        tests:
+          - positive_values
+
+      - name: weight_line_lbs
+        data_type: number
+        description: the total weight per line of products.
+        tests:
+          - positive_values
+
+      - name: days_to_deliver
+        data_type: number
+        description: if the order was deliver, the metric calculate the number of days since the order's creation until the delivered date.
+
+      - name: deliver_precision_days
+        data_type: number
+        description: when a order is shipped to the customer, an estimated date for deliver is created. This metric compares the precison of the estimated deliver date with the actual date of the order deliver.
+
+      - name: created_at_utc
+        data_type: timestamp_ltz
+        description: Timestamp indicating when the order was created in Coordinated Universal Time (UTC).
+
+      - name: created_at_date
+        data_type: date
+        description: date extraction from the field "created_at_utc" Timestamp (UTC).
+
+      - name: time_key
+        data_type: varchar
+        description: extracted time from the Timestamp column "created_at_utc" in Coordinated Universal Time (UTC) and converted to a key, for later join the time_table in the BI report.
+
+      - name: orders_load
+        data_type: varchar
+        description: the timestamp when the record was load into bronze stage.
+
+      - name: batch_id
+        data_type: varchar
+        description: a hash to identify when the incremental model was run.
+
+  - name: fact_agg_costs
+    description: A aggregated table with the opeartive and structural costs, grouped by scope, category and month.
+    columns:
+          - name: scope
+            data_type: varchar
+            description: Refers to the type of cost in the company.
+
+          - name: category
+            data_type: varchar
+            description: The category of cost of the accounting entry.
+
+          - name: month
+            data_type: date
+            description: The month of that particular aggregated row.
+
+          - name: total_usd
+            data_type: number
+            description: The total amount of an aggregated expense.
